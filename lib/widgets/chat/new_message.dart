@@ -16,12 +16,17 @@ class _NewMessageState extends State<NewMessage> {
   var _enteredMessage = '';
   void _sendMessage() async {
       FocusScope.of(context).unfocus();
+
       final user = await FirebaseAuth.instance.currentUser!;
+      final userData = await FirebaseFirestore.instance.collection('users')
+      .doc(user.uid).get();
+      print(userData['username'].toString());
 
       FirebaseFirestore.instance.collection('chat').add({
         'text': _enteredMessage,
         'createdAt': Timestamp.now(),
         'userId': user.uid,
+        'username': userData['username']
 
       });
     _controller.clear();
@@ -50,7 +55,7 @@ class _NewMessageState extends State<NewMessage> {
           ),
           IconButton(
             color: Theme.of(context).primaryColor,
-            icon: Icon(Icons.send),
+            icon: const Icon(Icons.send),
             onPressed: _enteredMessage.trim().isEmpty ? null : _sendMessage,
           )
         ],
