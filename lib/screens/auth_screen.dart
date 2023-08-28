@@ -45,12 +45,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
         authResult = await _auth.createUserWithEmailAndPassword(
             email: email, password: password);
-        await FirebaseFirestore.instance.collection('users')
-        .doc(authResult.user?.uid)
-        .set({
-            'username' : username,
-            'email' : email,
-          });
+
 
         }
 
@@ -64,16 +59,24 @@ class _AuthScreenState extends State<AuthScreen> {
         final UploadTask uploadTask =ref.putFile(image);
 
         final TaskSnapshot snapshot = await uploadTask;
-
-        if (snapshot.state == TaskState.success) {
-          final downloadUrl = await ref.getDownloadURL();
-          print('Download URL: $downloadUrl');
-        }
-        else{
-          print('Upload failed');
-        }
+        final downloadUrl;
+      //  if (snapshot.state == TaskState.success) {
+         downloadUrl = await ref.getDownloadURL();
 
 
+        //   print('Download URL: $downloadUrl');
+        // }
+        // else{
+        //   print('Upload failed');
+        // }
+
+        await FirebaseFirestore.instance.collection('users')
+            .doc(authResult.user?.uid)
+            .set({
+          'username' : username,
+          'email' : email,
+          'image_url' : downloadUrl,
+        });
 
       } on PlatformException catch (err){
       String? message1 = 'An error occure, please check your credentials!';
