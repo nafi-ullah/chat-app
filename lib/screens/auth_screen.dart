@@ -1,10 +1,13 @@
 
+import 'dart:io';
+
 import 'package:chitchat/widgets/auth_form.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 
 
@@ -23,10 +26,12 @@ class _AuthScreenState extends State<AuthScreen> {
       String email,
       String password,
       String username,
+      File image,
       bool isLogin,
       BuildContext ctx,
       ) async {
-      final authResult;
+    UserCredential authResult;
+
 
       try{
         setState(() {
@@ -36,10 +41,28 @@ class _AuthScreenState extends State<AuthScreen> {
        authResult = await  _auth.signInWithEmailAndPassword(
            email: email, password: password);
       } else{
+          final ref = FirebaseStorage.instance
+            .ref()
+            .child('user_image')
+            //.child('${authResult!.user.uid}.jpg');
+              .child('NAFI.jpg');
+
+          final UploadTask uploadTask =ref.putFile(image);
+
+          final TaskSnapshot snapshot = await uploadTask;
+
+          if (snapshot.state == TaskState.success) {
+            final downloadUrl = await ref.getDownloadURL();
+            print('Download URL: $downloadUrl');
+          }
+          else{
+            print('Upload failed');
+          }
+
         authResult = await _auth.createUserWithEmailAndPassword(
             email: email, password: password);
         await FirebaseFirestore.instance.collection('users')
-        .doc(authResult.user.uid)
+        .doc(authResult.user?.uid)
         .set({
             'username' : username,
             'email' : email,
@@ -66,6 +89,7 @@ class _AuthScreenState extends State<AuthScreen> {
       }  catch (err){
           //String? message = err.;
         //var message;
+        print(err.toString());
         String str = err.toString();
         String? restSubstring;
         int closingBracketIndex = str.indexOf("]");
