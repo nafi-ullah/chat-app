@@ -41,23 +41,7 @@ class _AuthScreenState extends State<AuthScreen> {
        authResult = await  _auth.signInWithEmailAndPassword(
            email: email, password: password);
       } else{
-          final ref = FirebaseStorage.instance
-            .ref()
-            .child('user_image')
-            //.child('${authResult!.user.uid}.jpg');
-              .child('NAFI.jpg');
 
-          final UploadTask uploadTask =ref.putFile(image);
-
-          final TaskSnapshot snapshot = await uploadTask;
-
-          if (snapshot.state == TaskState.success) {
-            final downloadUrl = await ref.getDownloadURL();
-            print('Download URL: $downloadUrl');
-          }
-          else{
-            print('Upload failed');
-          }
 
         authResult = await _auth.createUserWithEmailAndPassword(
             email: email, password: password);
@@ -68,7 +52,29 @@ class _AuthScreenState extends State<AuthScreen> {
             'email' : email,
           });
 
-      }
+        }
+
+
+        final ref = FirebaseStorage.instance
+            .ref()
+            .child('user_image')
+         .child('${authResult.user?.uid}.jpg');
+            //.child('NAFI.jpg');
+
+        final UploadTask uploadTask =ref.putFile(image);
+
+        final TaskSnapshot snapshot = await uploadTask;
+
+        if (snapshot.state == TaskState.success) {
+          final downloadUrl = await ref.getDownloadURL();
+          print('Download URL: $downloadUrl');
+        }
+        else{
+          print('Upload failed');
+        }
+
+
+
       } on PlatformException catch (err){
       String? message1 = 'An error occure, please check your credentials!';
         print(err);
